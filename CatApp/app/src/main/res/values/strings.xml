@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">CatApp</string>
+    <string name="like_button_title">Like</string>
+    <string name="skip_button_title">Skip</string>
+    <string name="user_skipped_a_cat_text1">All cats are likable. Shame on you!</string>
+    <string name="user_skipped_a_cat_text2">How could you skip on that beauty!</string>
+    <string name="user_skipped_a_cat_text3">Do you even have a heart?</string>
+    <string name="user_skipped_a_cat_text4">You are not a real cat lover</string>
+    <string name="user_skipped_a_cat_text5">The cat universe will never love you after skipping!</string>
+    <string name="user_skipped_a_cat_text6">I would be afraid to go to sleep if I were you!</string>
+    <string name="user_skipped_a_cat_text7">You are a disgrace to all cats!</string>
+    <string name="user_skipped_a_cat_text8">The cat you skipped does not like you either.</string>
+</resources>
