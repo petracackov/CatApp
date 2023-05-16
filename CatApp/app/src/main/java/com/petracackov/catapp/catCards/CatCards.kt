@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import com.petracackov.catapp.R
 import com.petracackov.catapp.ui.theme.*
+import com.petracackov.catapp.utility.DraggableComponent
 
 @Composable
 fun CatCards(
@@ -28,10 +29,16 @@ fun CatCards(
             .background(RodeoDust)
             .fillMaxSize()
     ) {
-        CatCard(
-            cat = catCardsUiState.currentCat,
-            modifier = Modifier.padding(10.dp)
-        )
+        DraggableComponent(
+            onDragEnd = {
+                println("End")
+            }
+        ) {
+            CatCard(
+                cat = catCardsUiState.currentCat,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
 
         Box(
             modifier = Modifier
