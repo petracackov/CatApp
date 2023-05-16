@@ -19,8 +19,12 @@ interface CatApiService {
         "x-api-key: $apiKey"
     )
 
-    @GET("v1/images/search")
+    @GET(SEARCH_ENDPONT)
     suspend fun getRandomCat(): List<CatModel?>?
+
+    companion object {
+        const val SEARCH_ENDPONT = "v1/images/search"
+    }
 }
 
 object CatApi {
