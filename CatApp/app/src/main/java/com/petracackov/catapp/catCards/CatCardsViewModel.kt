@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.petracackov.catapp.data.CatApi
 import com.petracackov.catapp.data.CatModel
+import com.petracackov.catapp.utility.CardState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,6 +56,14 @@ class CatCardsViewModel : ViewModel() {
             } catch (e: Exception) {
                 println(e.message)
             }
+        }
+    }
+
+    fun evaluateCardState(cardState: CardState) {
+        when (cardState) {
+            CardState.LEFT ->  skipCat()
+            CardState.RIGHT -> likeCurrentCat()
+            CardState.MIDDLE -> return
         }
     }
 
