@@ -17,13 +17,17 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.petracackov.catapp.utility.CardState.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toDuration
 
 @Composable
-fun DraggableComponent(state: MutableState<CardState>, onDragEnd: () -> Unit, content: @Composable () -> Unit) {
+fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd: () -> Unit, onVisibilityAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
     val xAxis = remember { Animatable(0f) }
     val yAxis = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
@@ -31,22 +35,30 @@ fun DraggableComponent(state: MutableState<CardState>, onDragEnd: () -> Unit, co
     val coroutineScope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp * Resources.getSystem().displayMetrics.density
+    val animationDuration: Int = 300
 
     Box(
         content = {
-            Column() {
-                Text(text = state.value.name)
-                content()
-            } },
+            content()
+        },
         modifier = Modifier
             .alpha(alpha.value)
-            .offset {
-                IntOffset(xAxis.value.roundToInt(), yAxis.value.roundToInt())
-            }
+            .offset(x = xAxis.value.dp, y = yAxis.value.dp)
             .rotate(degrees = rotation.value)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragCancel = onDragEnd,
+                    onDragCancel = {
+                        snap(
+                            coroutineScope = coroutineScope,
+                            alpha = alpha,
+                            xAxis = xAxis,
+                            yAxis = yAxis,
+                            rotation = rotation,
+                            state = state.value,
+                            screenWidth = screenWidth,
+                            animationDuration = animationDuration
+                        )
+                    },
                     onDragEnd = {
                         snap(
                             coroutineScope = coroutineScope,
@@ -55,10 +67,16 @@ fun DraggableComponent(state: MutableState<CardState>, onDragEnd: () -> Unit, co
                             yAxis = yAxis,
                             rotation = rotation,
                             state = state.value,
-                            screenWidth = screenWidth
+                            screenWidth = screenWidth,
+                            animationDuration = animationDuration
                         )
-                        onDragEnd()
-                        state.value = MIDDLE
+                        coroutineScope.launch {
+                            delay(animationDuration.toLong())
+                            onTransitionAnimationEnd()
+                            delay(animationDuration.toLong())
+                            onVisibilityAnimationEnd()
+                            state.value = MIDDLE
+                        }
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
@@ -94,11 +112,12 @@ private fun snap(coroutineScope: CoroutineScope,
                  yAxis: Animatable<Float, AnimationVector1D>,
                  rotation: Animatable<Float, AnimationVector1D>,
                  state: CardState,
-                 screenWidth: Float) {
+                 screenWidth: Float,
+                 animationDuration: Int) {
 
     coroutineScope.launch {
-        var xOffset: Float
-        var alphaValue: Float
+        val xOffset: Float
+        val alphaValue: Float
 
         when (state) {
             LEFT -> {
@@ -119,7 +138,7 @@ private fun snap(coroutineScope: CoroutineScope,
             xAxis.animateTo(
                 targetValue = (xOffset),
                 animationSpec = tween(
-                    durationMillis = 300,
+                    durationMillis = animationDuration,
                     delayMillis = 0
                 )
             )
@@ -133,7 +152,7 @@ private fun snap(coroutineScope: CoroutineScope,
                 yAxis.animateTo(
                     targetValue = 0f,
                     animationSpec = tween(
-                        durationMillis = 300,
+                        durationMillis = animationDuration,
                         delayMillis = 0
                     )
                 )
@@ -144,14 +163,14 @@ private fun snap(coroutineScope: CoroutineScope,
             alpha.animateTo(
                 targetValue = alphaValue,
                 animationSpec = tween(
-                    durationMillis = 300,
+                    durationMillis = animationDuration,
                     delayMillis = 0
                 )
             )
             alpha.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(
-                    durationMillis = 300,
+                    durationMillis = animationDuration,
                     delayMillis = 0
                 )
             )

@@ -5,5 +5,6 @@ import com.petracackov.catapp.data.CatModel
 
 data class CatCardsUiState(
     val currentCat: CatModel?,
+    val nextCat: CatModel?,
     val dissStatement: DissStatement? = null
 )

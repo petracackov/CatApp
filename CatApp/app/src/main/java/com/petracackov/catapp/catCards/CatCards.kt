@@ -46,17 +46,31 @@ fun CatCards(
             modifier = modifier
                 .fillMaxSize()
         ) {
-            DraggableComponent(
-                state = cardState,
-                onDragEnd = {
-                    catCardsViewModel.evaluateCardState(cardState = cardState.value)
-                }
-            ) {
+            Box() {
                 CatCard(
-                    cat = catCardsUiState.currentCat,
+                    cat = catCardsUiState.nextCat,
+                    isBlurred = true,
                     modifier = Modifier.padding(10.dp)
                 )
+
+                DraggableComponent(
+                    state = cardState,
+                    onTransitionAnimationEnd = {
+                        println("transition")
+                        catCardsViewModel.evaluateCardState(cardState = cardState.value)
+                    },
+                    onVisibilityAnimationEnd = {
+                        println("visibility")
+                        if (cardState.value != CardState.MIDDLE) catCardsViewModel.setupNextCat()
+                    },
+                ) {
+                    CatCard(
+                        cat = catCardsUiState.currentCat,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
             }
+
 
             ButtonsRow(catCardsViewModel = catCardsViewModel)
 

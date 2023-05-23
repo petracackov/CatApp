@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class CatCardsViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CatCardsUiState(currentCat = null))
+    private val _uiState = MutableStateFlow(CatCardsUiState(currentCat = null, nextCat = null))
     val uiState: StateFlow<CatCardsUiState> = _uiState.asStateFlow()
 
     init {
@@ -23,26 +23,43 @@ class CatCardsViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getNewCat(showDissStatement: Boolean = false) {
+    private suspend fun getNewCat() {
             try {
-                val randomCat = CatApi.retrofitService.getRandomCat()?.get(0)
+                var nextCat = uiState.value.nextCat
+                if (nextCat == null) {
+                    val randomCat = CatApi.retrofitService.getRandomCat()?.get(0)
+                    nextCat = randomCat
+                }
+
+                val nextRandomCat = CatApi.retrofitService.getRandomCat()?.get(0)
                 _uiState.update { currentState ->
                     currentState.copy(
-                        currentCat = randomCat,
-                        dissStatement = if (showDissStatement) DissStatement.values().random() else null
+                        currentCat = nextCat,
+                        nextCat = nextRandomCat
                     )
                 }
+
             } catch (e: Exception) {
                 println(e.message)
             }
 
     }
 
+    private fun setupCurrentCat(showDissStatement: Boolean = false) {
+        var nextCat = uiState.value.nextCat
+        _uiState.update { currentState ->
+            currentState.copy(
+                currentCat = nextCat,
+                dissStatement = if (showDissStatement) DissStatement.values().random() else null
+            )
+        }
+    }
+
     fun likeCurrentCat() {
         viewModelScope.launch {
             try {
                 // TODO: like cat
-                val randomCat = getNewCat()
+                val randomCat = setupCurrentCat()
             } catch (e: Exception) {
                 println(e.message)
             }
@@ -50,9 +67,20 @@ class CatCardsViewModel : ViewModel() {
     }
 
     fun skipCat() {
+        setupCurrentCat(showDissStatement = true)
         viewModelScope.launch {
             try {
-                val randomCat = getNewCat(showDissStatement = true)
+                getNewCat()
+            } catch (e: Exception) {
+                println(e.message)
+            }
+        }
+    }
+
+    fun setupNextCat() {
+        viewModelScope.launch {
+            try {
+                getNewCat()
             } catch (e: Exception) {
                 println(e.message)
             }
@@ -61,7 +89,7 @@ class CatCardsViewModel : ViewModel() {
 
     fun evaluateCardState(cardState: CardState) {
         when (cardState) {
-            CardState.LEFT ->  skipCat()
+            CardState.LEFT ->  setupCurrentCat(showDissStatement = true)
             CardState.RIGHT -> likeCurrentCat()
             CardState.MIDDLE -> return
         }
