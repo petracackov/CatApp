@@ -31,13 +31,13 @@ fun CatCards(
         ) {
             Box(modifier = Modifier
                 .background(
-                    Thatch.copy(alpha =  if (cardState.value == CardState.LEFT) 0.6f else 0.0f)
+                    Thatch.copy(alpha = if (cardState.value == CardState.LEFT) 0.6f else 0.0f)
                 )
                 .weight(1f)
                 .fillMaxSize())
             Box(modifier = Modifier
                 .background(
-                    Thatch.copy(alpha =  if (cardState.value == CardState.RIGHT) 0.6f else 0.0f)
+                    Thatch.copy(alpha = if (cardState.value == CardState.RIGHT) 0.6f else 0.0f)
                 )
                 .weight(1f)
                 .fillMaxSize())
@@ -49,7 +49,7 @@ fun CatCards(
             DraggableComponent(
                 state = cardState,
                 onDragEnd = {
-                    println("end")
+                    catCardsViewModel.evaluateCardState(cardState = cardState.value)
                 }
             ) {
                 CatCard(
