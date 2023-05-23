@@ -22,7 +22,7 @@ import kotlin.math.roundToInt
 
 // MARK: -  Constants
 
-private const val animationDuration = 300
+private const val transitionDuration = 300
 
 @Composable
 fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd: () -> Unit, onVisibilityAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
@@ -68,9 +68,9 @@ fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd:
                             screenWidth = screenWidth
                         )
                         coroutineScope.launch {
-                            delay(animationDuration.toLong())
+                            delay(transitionDuration.toLong())
                             onTransitionAnimationEnd()
-                            delay(animationDuration.toLong())
+                            delay(transitionDuration.toLong())
                             onVisibilityAnimationEnd()
                             state.value = MIDDLE
                         }
@@ -133,7 +133,7 @@ private fun snap(coroutineScope: CoroutineScope,
             xAxis.animateTo(
                 targetValue = (xOffset),
                 animationSpec = tween(
-                    durationMillis = animationDuration,
+                    durationMillis = transitionDuration,
                     delayMillis = 0
                 )
             )
@@ -147,7 +147,7 @@ private fun snap(coroutineScope: CoroutineScope,
                 yAxis.animateTo(
                     targetValue = 0f,
                     animationSpec = tween(
-                        durationMillis = animationDuration,
+                        durationMillis = transitionDuration,
                         delayMillis = 0
                     )
                 )
@@ -158,14 +158,14 @@ private fun snap(coroutineScope: CoroutineScope,
             alpha.animateTo(
                 targetValue = alphaValue,
                 animationSpec = tween(
-                    durationMillis = animationDuration,
+                    durationMillis = transitionDuration,
                     delayMillis = 0
                 )
             )
             alpha.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(
-                    durationMillis = animationDuration,
+                    durationMillis = transitionDuration,
                     delayMillis = 0
                 )
             )

@@ -56,11 +56,9 @@ fun CatCards(
                 DraggableComponent(
                     state = cardState,
                     onTransitionAnimationEnd = {
-                        println("transition")
                         catCardsViewModel.evaluateCardState(cardState = cardState.value)
                     },
                     onVisibilityAnimationEnd = {
-                        println("visibility")
                         if (cardState.value != CardState.MIDDLE) catCardsViewModel.setupNextCat()
                     },
                 ) {
