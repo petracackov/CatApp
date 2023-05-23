@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.petracackov.catapp.catCard.CatCard
 import com.petracackov.catapp.ui.theme.CatAppTheme
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.zIndex
 import com.petracackov.catapp.R
 import com.petracackov.catapp.ui.theme.*
 import com.petracackov.catapp.utility.CardState
@@ -46,7 +47,7 @@ fun CatCards(
             modifier = modifier
                 .fillMaxSize()
         ) {
-            Box() {
+            Box(modifier = Modifier.zIndex(1f)) {
                 CatCard(
                     cat = catCardsUiState.nextCat,
                     isBlurred = true,
