@@ -57,10 +57,10 @@ fun CatCards(
                 DraggableComponent(
                     state = cardState,
                     onTransitionAnimationEnd = {
-                        catCardsViewModel.evaluateCardState(cardState = cardState.value)
+                        catCardsViewModel.evaluateCardStateAfterTransition(cardState = cardState.value)
                     },
                     onVisibilityAnimationEnd = {
-                        if (cardState.value != CardState.MIDDLE) catCardsViewModel.setupNextCat()
+                       catCardsViewModel.evaluateCardStateAfterVisibilityAnimation(cardState = cardState.value)
                     },
                 ) {
                     CatCard(
@@ -125,7 +125,8 @@ private fun ButtonsRow(catCardsViewModel: CatCardsViewModel) {
                     backgroundColor = RomanCoffee,
                     contentColor = Color.White),
                 onClick = {
-                    catCardsViewModel.skipCat()
+                    // TODO
+                    //catCardsViewModel.skipCat()
                 }
             )
 
@@ -137,7 +138,8 @@ private fun ButtonsRow(catCardsViewModel: CatCardsViewModel) {
                     backgroundColor = SummerGreen,
                     contentColor = Color.Black),
                 onClick = {
-                    catCardsViewModel.likeCurrentCat()
+                    // TODO
+                   // catCardsViewModel.likeCurrentCat()
                 }
             )
         }
