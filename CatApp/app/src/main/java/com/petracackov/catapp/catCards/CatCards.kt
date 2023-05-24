@@ -24,7 +24,13 @@ fun CatCards(
     catCardsViewModel: CatCardsViewModel = viewModel()
 ) {
     val catCardsUiState by catCardsViewModel.uiState.collectAsState()
-    var cardState = remember { mutableStateOf(CardState.MIDDLE) }
+    val cardState = remember { mutableStateOf(CardState.MIDDLE) }
+    val isCardHidden = remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = catCardsUiState.isLoadingNextCat) {
+        isCardHidden.value = catCardsUiState.isLoadingNextCat
+    }
+
     Box {
         Row(modifier = modifier
             .background(RodeoDust)
@@ -50,18 +56,17 @@ fun CatCards(
             Box(modifier = Modifier.zIndex(1f)) {
                 CatCard(
                     cat = catCardsUiState.nextCat,
+                    backgroundColor = Color.White,
                     isBlurred = true,
                     modifier = Modifier.padding(10.dp)
                 )
 
                 DraggableComponent(
                     state = cardState,
+                    isHidden = isCardHidden,
                     onTransitionAnimationEnd = {
-                        catCardsViewModel.evaluateCardStateAfterTransition(cardState = cardState.value)
-                    },
-                    onVisibilityAnimationEnd = {
-                       catCardsViewModel.evaluateCardStateAfterVisibilityAnimation(cardState = cardState.value)
-                    },
+                        catCardsViewModel.evaluateCardState(cardState = cardState.value)
+                    }
                 ) {
                     CatCard(
                         cat = catCardsUiState.currentCat,

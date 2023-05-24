@@ -25,18 +25,17 @@ import com.petracackov.catapp.ui.theme.CatAppTheme
 import com.petracackov.catapp.ui.theme.*
 
 @Composable
-internal fun CatCard(cat: CatModel?, isBlurred: Boolean = false, modifier: Modifier = Modifier) {
-    Column(
+internal fun CatCard(cat: CatModel?, backgroundColor: Color = Color.Transparent, isBlurred: Boolean = false, modifier: Modifier = Modifier) {
+    Box(
         modifier = modifier
             .clip(RoundedCornerShape(10))
             .border(width = 3.dp, color = RomanCoffee, shape = RoundedCornerShape(10))
-            .background(Color.White)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+            .background(backgroundColor)
     ) {
         Box(
             modifier = Modifier
                 .size(400.dp)
+                .border(width = 20.dp, color = Color.White, shape = RoundedCornerShape(10))
                 .clip(RoundedCornerShape(10))
         ) {
             if (cat != null) {
@@ -50,15 +49,6 @@ internal fun CatCard(cat: CatModel?, isBlurred: Boolean = false, modifier: Modif
                         .align(Alignment.Center)
                         .fillMaxSize()
                         .blur(radius = if (isBlurred) 16.dp else 0.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = painterResource(R.drawable.lepotec),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             }

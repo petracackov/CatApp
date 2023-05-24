@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.sql.Time
+import java.util.*
+import kotlin.concurrent.schedule
 
 class CatCardsViewModel : ViewModel() {
 
@@ -25,7 +28,7 @@ class CatCardsViewModel : ViewModel() {
 
     private suspend fun getAndSetupNewCats() {
         try {
-            var currentCat = CatApi.retrofitService.getRandomCat()?.get(0)
+            val currentCat = CatApi.retrofitService.getRandomCat()?.get(0)
             val nextRandomCat = CatApi.retrofitService.getRandomCat()?.get(0)
             _uiState.update { currentState ->
                 currentState.copy(
@@ -42,10 +45,6 @@ class CatCardsViewModel : ViewModel() {
     private fun setupCurrentCat(showDissStatement: Boolean = false) {
         var nextCat = uiState.value.nextCat
         _uiState.update { currentState ->
-            val current: String = currentState.currentCat?.id.orEmpty()
-            val next: String = currentState.nextCat?.id.orEmpty()
-            val new: String = nextCat?.id.orEmpty()
-            println("Petra setupCurrentCat Current: $current,Next: $next, newCurrent: $new")
             currentState.copy(
                 currentCat = nextCat,
                 dissStatement = if (showDissStatement) DissStatement.values().random() else null
@@ -56,19 +55,34 @@ class CatCardsViewModel : ViewModel() {
     private fun getAndSetupNextCat() {
         viewModelScope.launch {
             try {
+                setupLoadingState(isLoading = true)
                 val randomCat = CatApi.retrofitService.getRandomCat()?.get(0)
-                _uiState.update { currentState ->
-                    val current: String = currentState.currentCat?.id.orEmpty()
-                    val next: String = currentState.nextCat?.id.orEmpty()
-                    val new: String = randomCat?.id.orEmpty()
-                    println("Petra getAndSetupNextCat Current: $current,Next: $next, newNext: $new")
-                    currentState.copy(
-                        nextCat = randomCat
-                    )
+                setupLoadingState(isLoading = false)
+
+                // TODO: figure out something els
+                Timer().schedule(300) {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            nextCat = randomCat
+                        )
+                    }
                 }
             } catch (e: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        nextCat = null
+                    )
+                }
                 println(e.message)
             }
+        }
+    }
+
+    private fun setupLoadingState(isLoading: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoadingNextCat = isLoading
+            )
         }
     }
 
@@ -94,26 +108,19 @@ class CatCardsViewModel : ViewModel() {
 //        }
 //    }
 
-    fun evaluateCardStateAfterTransition(cardState: CardState) {
+    fun evaluateCardState(cardState: CardState) {
         when (cardState) {
             // Skip: Set next cat as the current cat
-            CardState.LEFT -> setupCurrentCat(showDissStatement = true)
-            // Skip: Set next cat as the current cat and request the like cat
-            CardState.RIGHT -> setupCurrentCat(showDissStatement = false)
-            CardState.MIDDLE -> return
-        }
-    }
-
-    fun evaluateCardStateAfterVisibilityAnimation(cardState: CardState) {
-        when (cardState) {
-            CardState.LEFT, CardState.RIGHT -> {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        nextCat = null
-                    )
-                }
+            CardState.LEFT -> {
+                setupCurrentCat(showDissStatement = true)
                 getAndSetupNextCat()
             }
+            // Skip: Set next cat as the current cat and request the like cat
+            CardState.RIGHT -> {
+                setupCurrentCat(showDissStatement = false)
+                getAndSetupNextCat()
+            }
+
             CardState.MIDDLE -> return
         }
     }

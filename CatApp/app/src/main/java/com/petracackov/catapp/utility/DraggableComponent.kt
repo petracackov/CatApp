@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 private const val transitionDuration = 300
 
 @Composable
-fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd: () -> Unit, onVisibilityAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
+fun DraggableComponent(state: MutableState<CardState>, isHidden: MutableState<Boolean>, onTransitionAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
     val xAxis = remember { Animatable(0f) }
     val yAxis = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
@@ -33,6 +33,20 @@ fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd:
     val coroutineScope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp * Resources.getSystem().displayMetrics.density
+
+    LaunchedEffect(key1 = isHidden.value) {
+        if (isHidden.value) {
+            alpha.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = transitionDuration)
+            )
+        } else {
+            alpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = transitionDuration)
+            )
+        }
+    }
 
     Box(
         content = {
@@ -45,66 +59,74 @@ fun DraggableComponent(state: MutableState<CardState>, onTransitionAnimationEnd:
             }
             .rotate(degrees = rotation.value)
             .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragCancel = {
-                        snap(
-                            coroutineScope = coroutineScope,
-                            alpha = alpha,
-                            xAxis = xAxis,
-                            yAxis = yAxis,
-                            rotation = rotation,
-                            state = state.value,
-                            screenWidth = screenWidth
-                        )
-                    },
-                    onDragEnd = {
-                        snap(
-                            coroutineScope = coroutineScope,
-                            alpha = alpha,
-                            xAxis = xAxis,
-                            yAxis = yAxis,
-                            rotation = rotation,
-                            state = state.value,
-                            screenWidth = screenWidth
-                        )
-                        coroutineScope.launch {
-                            delay(transitionDuration.toLong())
-                            onTransitionAnimationEnd()
-                            delay(transitionDuration.toLong())
-                            onVisibilityAnimationEnd()
-                            state.value = MIDDLE
-                        }
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        coroutineScope.launch {
-                            val deltaOffset =
-                                IntOffset(dragAmount.x.roundToInt(), dragAmount.y.roundToInt())
-                            val newX = xAxis.value.plus(deltaOffset.x)
-                            val newY = yAxis.value.plus(deltaOffset.y)
+                    detectDragGestures(
+                        onDragCancel = {
+                            if (!isHidden.value) {
+                                snap(
+                                    coroutineScope = coroutineScope,
+                                    xAxis = xAxis,
+                                    yAxis = yAxis,
+                                    rotation = rotation,
+                                    state = state.value,
+                                    screenWidth = screenWidth
+                                )
+                            }
+                        },
+                        onDragEnd = {
+                            if (!isHidden.value) {
+                                snap(
+                                    coroutineScope = coroutineScope,
+                                    xAxis = xAxis,
+                                    yAxis = yAxis,
+                                    rotation = rotation,
+                                    state = state.value,
+                                    screenWidth = screenWidth
+                                )
 
-                            xAxis.snapTo(newX)
-                            yAxis.snapTo(newY)
+                                isHidden.value = (state.value != MIDDLE)
 
-                            if (newX > 150) {
-                                state.value = RIGHT
-                                rotation.animateTo(10f)
-                            } else if (newX < -150) {
-                                state.value = LEFT
-                                rotation.animateTo(-10f)
-                            } else {
-                                state.value = MIDDLE
-                                rotation.animateTo(0f)
+                                coroutineScope.launch {
+                                    delay(transitionDuration.toLong())
+                                    onTransitionAnimationEnd()
+                                    state.value = MIDDLE
+                                }
+                            }
+                        },
+                        onDrag = { change, dragAmount ->
+                            if (!isHidden.value) {
+                                change.consume()
+                                coroutineScope.launch {
+                                    val deltaOffset =
+                                        IntOffset(
+                                            dragAmount.x.roundToInt(),
+                                            dragAmount.y.roundToInt()
+                                        )
+                                    val newX = xAxis.value.plus(deltaOffset.x)
+                                    val newY = yAxis.value.plus(deltaOffset.y)
+
+                                    xAxis.snapTo(newX)
+                                    yAxis.snapTo(newY)
+
+                                    if (newX > 150) {
+                                        state.value = RIGHT
+                                        rotation.animateTo(10f)
+                                    } else if (newX < -150) {
+                                        state.value = LEFT
+                                        rotation.animateTo(-10f)
+                                    } else {
+                                        state.value = MIDDLE
+                                        rotation.animateTo(0f)
+                                    }
+                                }
+
                             }
                         }
-                    }
-                )
+                    )
             }
     )
 }
 
 private fun snap(coroutineScope: CoroutineScope,
-                 alpha:  Animatable<Float, AnimationVector1D>,
                  xAxis: Animatable<Float, AnimationVector1D>,
                  yAxis: Animatable<Float, AnimationVector1D>,
                  rotation: Animatable<Float, AnimationVector1D>,
@@ -112,20 +134,15 @@ private fun snap(coroutineScope: CoroutineScope,
                  screenWidth: Float) {
 
     coroutineScope.launch {
-        val xOffset: Float
-        val alphaValue: Float
-        when (state) {
+        val xOffset: Float = when (state) {
             LEFT -> {
-                xOffset = -screenWidth - 50f
-                alphaValue = 0f
+                -screenWidth - 50f
             }
             RIGHT -> {
-                xOffset = screenWidth + 50f
-                alphaValue = 0f
+                screenWidth + 50f
             }
             MIDDLE -> {
-                xOffset = 0f
-                alphaValue = 1f
+                0f
             }
         }
 
@@ -152,23 +169,6 @@ private fun snap(coroutineScope: CoroutineScope,
                     )
                 )
             }
-        }
-
-        launch {
-            alpha.animateTo(
-                targetValue = alphaValue,
-                animationSpec = tween(
-                    durationMillis = transitionDuration,
-                    delayMillis = 0
-                )
-            )
-            alpha.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(
-                    durationMillis = transitionDuration,
-                    delayMillis = 0
-                )
-            )
         }
     }
 }
