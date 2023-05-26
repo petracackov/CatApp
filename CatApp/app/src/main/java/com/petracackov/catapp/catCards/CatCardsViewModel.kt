@@ -19,6 +19,7 @@ class CatCardsViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(CatCardsUiState(currentCat = null, nextCat = null))
     val uiState: StateFlow<CatCardsUiState> = _uiState.asStateFlow()
+    val animationDuration: Long = 300
 
     init {
         getAndSetupNewCats()
@@ -53,14 +54,12 @@ class CatCardsViewModel : ViewModel() {
         CatApi.retrofitService.likeCat(formParameters)
     }
 
-    private suspend fun getAndSetupNextCat(delay: Long = 0) {
+    private suspend fun getAndSetupNextCat() {
         try {
-            setupLoadingState(isLoading = true)
             val randomCat = CatApi.retrofitService.getRandomCat()?.get(0)
-            setupLoadingState(isLoading = false)
-            setupNextCat(newNextCat = randomCat, delay = delay)
+            setupNextCat(newNextCat = randomCat)
         } catch (e: Exception) {
-            setupNextCat(newNextCat = null, delay = 0)
+            setupNextCat(newNextCat = null)
             throw e
         }
     }
@@ -73,7 +72,8 @@ class CatCardsViewModel : ViewModel() {
         }
     }
 
-    private fun setupCurrentCat(showDissStatement: Boolean = false) {
+    private fun setupCurrentCat(showDissStatement: Boolean = false, delay: Long = 300) {
+        // TODO: figure out something else
         var nextCat = uiState.value.nextCat
         _uiState.update { currentState ->
             currentState.copy(
@@ -83,9 +83,9 @@ class CatCardsViewModel : ViewModel() {
         }
     }
 
-    private fun setupNextCat(newNextCat: CatModel?, delay: Long) {
-        // TODO: figure out something els
-        Timer().schedule(delay) {
+    private fun setupNextCat(newNextCat: CatModel?) {
+        // TODO: figure out something else
+        Timer().schedule(animationDuration) {
             _uiState.update { currentState ->
                 currentState.copy(
                     nextCat = newNextCat
@@ -94,50 +94,40 @@ class CatCardsViewModel : ViewModel() {
         }
     }
 
-
-//
-//    fun skipCat() {
-//        setupCurrentCat(showDissStatement = true)
-//        viewModelScope.launch {
-//            try {
-//                getNewCat()
-//            } catch (e: Exception) {
-//                println(e.message)
-//            }
-//        }
-//    }
-
     fun evaluateCardState(cardState: CardState) {
         when (cardState) {
-            // Skip: Set next cat as the current cat
             CardState.LEFT -> skip()
-            // Skip: Set next cat as the current cat and request the like cat
-            CardState.RIGHT -> {
-                like()
-            }
+            CardState.RIGHT -> like()
             CardState.MIDDLE -> return
         }
     }
 
+    // Skip: Like a cat, request the new cat and set the next cat as current cat
     fun like() {
         viewModelScope.launch {
             try {
+                setupLoadingState(isLoading = true)
                 postLikeCat()
                 setupCurrentCat()
-                getAndSetupNextCat(delay = 300)
-            } catch (e: java.lang.Exception) {
+                getAndSetupNextCat()
+                setupLoadingState(isLoading = false)
+            } catch (e: Exception) {
                 // TODO: handle errors
                 println(e)
             }
         }
     }
 
+    // Skip: Set next cat as the current cat and load the next cat
     fun skip() {
         viewModelScope.launch {
             try {
+                setupLoadingState(isLoading = true)
                 setupCurrentCat(showDissStatement = true)
-                getAndSetupNextCat(delay = 300)
-            } catch (e: java.lang.Exception) {
+                getAndSetupNextCat()
+                setupLoadingState(isLoading = false)
+            } catch (e: Exception) {
+                // TODO: handle errors
                 println(e.message)
             }
         }

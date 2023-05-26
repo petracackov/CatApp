@@ -49,6 +49,7 @@ fun CatCards(
                 .weight(1f)
                 .fillMaxSize())
         }
+
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -64,6 +65,7 @@ fun CatCards(
                 DraggableComponent(
                     state = cardState,
                     isHidden = isCardHidden,
+                    transitionDuration = catCardsViewModel.animationDuration.toInt(),
                     onTransitionAnimationEnd = {
                         catCardsViewModel.evaluateCardState(cardState = cardState.value)
                     }
@@ -75,8 +77,7 @@ fun CatCards(
                 }
             }
 
-
-            ButtonsRow(catCardsViewModel = catCardsViewModel)
+            ButtonsRow(catCardsViewModel = catCardsViewModel, enabled = !catCardsUiState.isLoadingNextCat)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -88,11 +89,13 @@ fun CatCards(
 @Composable
 private fun ActionButton(
     modifier: Modifier = Modifier,
+    enabled: Boolean,
     text: String,
     colors: ButtonColors,
     onClick: () -> Unit,
 ) {
     Button(
+        enabled = enabled,
         colors = colors,
         contentPadding = PaddingValues(10.dp),
         elevation = ButtonDefaults.elevation(
@@ -111,7 +114,7 @@ private fun ActionButton(
 }
 
 @Composable
-private fun ButtonsRow(catCardsViewModel: CatCardsViewModel) {
+private fun ButtonsRow(catCardsViewModel: CatCardsViewModel, enabled: Boolean) {
     Box(
         modifier = Modifier
             .padding(10.dp)
@@ -126,25 +129,25 @@ private fun ButtonsRow(catCardsViewModel: CatCardsViewModel) {
                 modifier = Modifier
                     .weight(1f),
                 text = stringResource(R.string.skip_button_title),
+                enabled = enabled,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = RomanCoffee,
                     contentColor = Color.White),
                 onClick = {
-                    // TODO
-                    //catCardsViewModel.skipCat()
+                    catCardsViewModel.skip()
                 }
             )
 
             ActionButton(
                 modifier = Modifier
                     .weight(1f),
+                enabled = enabled,
                 text = stringResource(R.string.like_button_title),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = SummerGreen,
                     contentColor = Color.Black),
                 onClick = {
-                    // TODO
-                   // catCardsViewModel.likeCurrentCat()
+                   catCardsViewModel.like()
                 }
             )
         }

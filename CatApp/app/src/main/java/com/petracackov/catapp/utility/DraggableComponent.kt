@@ -22,10 +22,8 @@ import kotlin.math.roundToInt
 
 // MARK: -  Constants
 
-private const val transitionDuration = 300
-
 @Composable
-fun DraggableComponent(state: MutableState<CardState>, isHidden: MutableState<Boolean>, onTransitionAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
+fun DraggableComponent(state: MutableState<CardState>, isHidden: MutableState<Boolean>, transitionDuration: Int, onTransitionAnimationEnd: () -> Unit, content: @Composable () -> Unit) {
     val xAxis = remember { Animatable(0f) }
     val yAxis = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
@@ -68,7 +66,8 @@ fun DraggableComponent(state: MutableState<CardState>, isHidden: MutableState<Bo
                                     yAxis = yAxis,
                                     rotation = rotation,
                                     state = state.value,
-                                    screenWidth = screenWidth
+                                    screenWidth = screenWidth,
+                                    transitionDuration = transitionDuration
                                 )
                             }
                         },
@@ -80,7 +79,8 @@ fun DraggableComponent(state: MutableState<CardState>, isHidden: MutableState<Bo
                                     yAxis = yAxis,
                                     rotation = rotation,
                                     state = state.value,
-                                    screenWidth = screenWidth
+                                    screenWidth = screenWidth,
+                                    transitionDuration = transitionDuration
                                 )
 
                                 isHidden.value = (state.value != MIDDLE)
@@ -131,7 +131,8 @@ private fun snap(coroutineScope: CoroutineScope,
                  yAxis: Animatable<Float, AnimationVector1D>,
                  rotation: Animatable<Float, AnimationVector1D>,
                  state: CardState,
-                 screenWidth: Float) {
+                 screenWidth: Float,
+                 transitionDuration: Int) {
 
     coroutineScope.launch {
         val xOffset: Float = when (state) {
