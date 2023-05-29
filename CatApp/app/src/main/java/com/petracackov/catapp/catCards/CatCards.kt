@@ -1,11 +1,13 @@
 package com.petracackov.catapp.catCards
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,6 +15,8 @@ import com.petracackov.catapp.catCard.CatCard
 import com.petracackov.catapp.ui.theme.CatAppTheme
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.petracackov.catapp.R
 import com.petracackov.catapp.ui.theme.*
 import com.petracackov.catapp.utility.CardState
@@ -21,7 +25,8 @@ import com.petracackov.catapp.utility.DraggableComponent
 @Composable
 fun CatCards(
     modifier: Modifier = Modifier,
-    catCardsViewModel: CatCardsViewModel = viewModel()
+    catCardsViewModel: CatCardsViewModel = viewModel(),
+    navigateToRankings: () -> Unit,
 ) {
     val catCardsUiState by catCardsViewModel.uiState.collectAsState()
     val cardState = remember { mutableStateOf(CardState.MIDDLE) }
@@ -54,6 +59,16 @@ fun CatCards(
             modifier = modifier
                 .fillMaxSize()
         ) {
+            Button(
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                ),
+                onClick = navigateToRankings
+            ) {
+                Image(painter = painterResource(id = R.drawable.rankings_icon), contentDescription = null)
+            }
             Box(modifier = Modifier.zIndex(1f)) {
                 CatCard(
                     cat = catCardsUiState.nextCat,
@@ -167,6 +182,6 @@ private fun DissText(catCardsUiState: CatCardsUiState, modifier: Modifier = Modi
 @Composable
 fun DefaultPreview() {
     CatAppTheme {
-        CatCards()
+        CatCards(navigateToRankings = {})
     }
 }
