@@ -15,8 +15,6 @@ import com.petracackov.catapp.catCard.CatCard
 import com.petracackov.catapp.ui.theme.CatAppTheme
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.petracackov.catapp.R
 import com.petracackov.catapp.ui.theme.*
 import com.petracackov.catapp.utility.CardState
@@ -35,68 +33,70 @@ fun CatCards(
     LaunchedEffect(key1 = catCardsUiState.isLoadingNextCat) {
         isCardHidden.value = catCardsUiState.isLoadingNextCat
     }
+    Column {
 
-    Box {
-        Row(modifier = modifier
-            .background(RodeoDust)
-            .fillMaxSize()
-        ) {
-            Box(modifier = Modifier
-                .background(
-                    Thatch.copy(alpha = if (cardState.value == CardState.LEFT) 0.6f else 0.0f)
-                )
-                .weight(1f)
-                .fillMaxSize())
-            Box(modifier = Modifier
-                .background(
-                    Thatch.copy(alpha = if (cardState.value == CardState.RIGHT) 0.6f else 0.0f)
-                )
-                .weight(1f)
-                .fillMaxSize())
-        }
+        NavigationBar(onIconPress = navigateToRankings)
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-        ) {
-            Button(
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-                elevation = ButtonDefaults.elevation(
-                    defaultElevation = 0.dp,
-                    pressedElevation = 0.dp
-                ),
-                onClick = navigateToRankings
+        Box {
+            Row(
+                modifier = modifier
+                    .background(RodeoDust)
+                    .fillMaxSize()
             ) {
-                Image(painter = painterResource(id = R.drawable.rankings_icon), contentDescription = null)
-            }
-            Box(modifier = Modifier.zIndex(1f)) {
-                CatCard(
-                    cat = catCardsUiState.nextCat,
-                    backgroundColor = Color.White,
-                    isBlurred = true,
-                    modifier = Modifier.padding(10.dp)
+                Box(
+                    modifier = Modifier
+                        .background(
+                            Thatch.copy(alpha = if (cardState.value == CardState.LEFT) 0.6f else 0.0f)
+                        )
+                        .weight(1f)
+                        .fillMaxSize()
                 )
+                Box(
+                    modifier = Modifier
+                        .background(
+                            Thatch.copy(alpha = if (cardState.value == CardState.RIGHT) 0.6f else 0.0f)
+                        )
+                        .weight(1f)
+                        .fillMaxSize()
+                )
+            }
 
-                DraggableComponent(
-                    state = cardState,
-                    isHidden = isCardHidden,
-                    transitionDuration = catCardsViewModel.animationDuration.toInt(),
-                    onTransitionAnimationEnd = {
-                        catCardsViewModel.evaluateCardState(cardState = cardState.value)
-                    }
-                ) {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+            ) {
+                Box(modifier = Modifier.zIndex(1f)) {
                     CatCard(
-                        cat = catCardsUiState.currentCat,
+                        cat = catCardsUiState.nextCat,
+                        backgroundColor = Color.White,
+                        isBlurred = true,
                         modifier = Modifier.padding(10.dp)
                     )
+
+                    DraggableComponent(
+                        state = cardState,
+                        isHidden = isCardHidden,
+                        transitionDuration = catCardsViewModel.animationDuration.toInt(),
+                        onTransitionAnimationEnd = {
+                            catCardsViewModel.evaluateCardState(cardState = cardState.value)
+                        }
+                    ) {
+                        CatCard(
+                            cat = catCardsUiState.currentCat,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
                 }
+
+                ButtonsRow(
+                    catCardsViewModel = catCardsViewModel,
+                    enabled = !catCardsUiState.isLoadingNextCat
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                DissText(catCardsUiState = catCardsUiState, modifier = Modifier.weight(1f))
             }
-
-            ButtonsRow(catCardsViewModel = catCardsViewModel, enabled = !catCardsUiState.isLoadingNextCat)
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            DissText(catCardsUiState = catCardsUiState, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -176,6 +176,24 @@ private fun DissText(catCardsUiState: CatCardsUiState, modifier: Modifier = Modi
         Text(text = stringResource(dissId))
         Spacer(modifier = modifier)
     }
+}
+
+@Composable
+private fun NavigationBar(onIconPress: () -> Unit) {
+    TopAppBar(
+        title = {
+            Text(text = "")
+        },
+        actions = {
+            IconButton(onClick = onIconPress) {
+                Image(
+                    painter = painterResource(id = R.drawable.rankings_icon),
+                    contentDescription = null
+                )
+            }
+        },
+        backgroundColor =  RomanCoffee
+    )
 }
 
 @Preview(showBackground = true)

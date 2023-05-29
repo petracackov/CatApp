@@ -19,7 +19,9 @@ fun NavigationHost() {
         }
 
         composable(route = Screen.Rankings.route()) {
-            Rankings()
+            Rankings {
+                navController.popBackStack()
+            }
         }
     }
 }
