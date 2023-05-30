@@ -1,4 +1,4 @@
-package com.petracackov.catapp
+package com.petracackov.catapp.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
@@ -6,7 +6,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.petracackov.catapp.catCards.CatCards
 import com.petracackov.catapp.catRanking.Rankings
-import com.petracackov.catapp.navigation.Screen
 
 @Composable
 fun NavigationHost() {
