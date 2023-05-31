@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.concurrent.schedule
 
-class CatCardsViewModel : ViewModel() {
+class CatCardsViewModel: ViewModel() {
 
     private val _uiState = MutableStateFlow(CatCardsUiState(currentCat = null, nextCat = null))
     val uiState: StateFlow<CatCardsUiState> = _uiState.asStateFlow()

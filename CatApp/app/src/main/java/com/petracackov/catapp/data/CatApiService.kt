@@ -3,11 +3,13 @@ package com.petracackov.catapp.data
 import com.google.gson.JsonObject
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 private const val baseUrl = "https://api.thecatapi.com/"
 private const val apiKey = "live_ZPaLkp80ubDZncywd3UWnHC8VvnKyeZqxxH58paRnA4ZsBDoScedjGIaWkeo0eNI"
@@ -40,6 +42,15 @@ object CatApi {
 interface CatApiService {
     @GET(SEARCH_ENDPOINT)
     suspend fun getRandomCat(): List<CatModel?>?
+
+    @GET(SEARCH_ENDPOINT)
+    suspend fun getCatsList(
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 20,
+        @Query("size") size: String = "small",
+        @Query("mime_type") type: String = "jpg,png",
+        @Query("order") order: String = "DESC",
+    ): Response<List<CatModel>?>
 
     @POST(LIKE_ENDPOINT)
     suspend fun likeCat(@Body raw: JsonObject): LikeResponse
